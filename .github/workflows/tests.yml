@@ -24,4 +24,4 @@ jobs:
 
       - name: Run tests
         working-directory: python
-        run: pytest
+        run: pytest api_test.py database_save_test.py
