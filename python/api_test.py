@@ -11,23 +11,33 @@ def test_health_check():
         "service": "AI Automotive Platform",
     }
 def test_extract_evidence():
-    with patch("api.save_evidence", return_value=999):
+    fake_evidence = AutomotiveEvidence(
+        evidence_type="customer_reported",
+        observation="The brake pedal feels soft.",
+        context="",
+        severity_or_intensity="not specified",
+        duration="",
+        confirmed_by_technician=False,
+    )
+
+    with (
+        patch("api.extract_evidence", return_value=fake_evidence),
+        patch("api.save_evidence", return_value=999),
+    ):
         response = client.post(
             "/extract-evidence",
             json={
                 "customer_message": "The brake pedal feels soft.",
             },
         )
+    
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
     assert data["record_id"] == 999
-    assert "evidence" in data
-    assert response.status_code == 200
-    data = response.json()
-    assert data["success"] is True
-    assert "record_id" in data
-    assert "evidence" in data
+    assert data["evidence"]["observation"] == (
+        "The brake pedal feels soft."
+    )
 def test_extract_evidence_rejects_non_string_message():
     response = client.post(
         "/extract-evidence",

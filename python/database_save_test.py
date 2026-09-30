@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from automotive_evidence import AutomotiveEvidence
 from database import save_evidence
 
@@ -12,10 +14,19 @@ def test_save_evidence():
         confirmed_by_technician=False,
     )
 
-    record_id = save_evidence(
-        "The grinding noise is mild.",
-        evidence,
-    )
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = (123,)
 
-    assert isinstance(record_id, int)
-    assert record_id > 0
+    mock_connection = MagicMock()
+    mock_connection.__enter__.return_value = mock_connection
+    mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+
+    with patch("database.psycopg.connect", return_value=mock_connection):
+        record_id = save_evidence(
+            "The grinding noise is mild.",
+            evidence,
+        )
+
+    assert record_id == 123
+    mock_cursor.execute.assert_called_once()
+    mock_connection.commit.assert_called_once()
