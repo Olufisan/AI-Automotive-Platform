@@ -88,3 +88,35 @@ def test_extract_evidence_handles_ai_failure():
          "evidence": None,
          "message": "Evidence extraction failed safely.",
     }
+
+def test_extract_evidence_handles_database_failure():
+    mock_evidence = AutomotiveEvidence(
+        evidence_type="customer_reported",
+        observation="The engine is making a strange noise.",
+        context="",
+        severity_or_intensity="not specified",
+        duration="",
+        confirmed_by_technician=False,
+    )
+
+    with (
+        patch("api.extract_evidence", return_value=mock_evidence),
+        patch(
+            "api.save_evidence",
+            side_effect=Exception("Database connection failed"),
+        ),
+    ):
+        response = client.post(
+            "/extract-evidence",
+            json={
+                "customer_message": "The engine is making a strange noise.",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "success": False,
+        "record_id": None,
+        "evidence": None,
+        "message": "Evidence could not be saved.",
+    }
