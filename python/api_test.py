@@ -71,3 +71,18 @@ def test_extract_evidence_with_mocked_dependencies():
     assert data["record_id"] == 1000
     assert data["evidence"]["observation"] == (
         "The brake pedal feels soft.")
+
+def test_extract_evidence_handles_ai_failure():
+    with patch("api.extract_evidence", return_value=None):
+        response = client.post(
+            "/extract-evidence",
+            json={
+                "customer_message": "The engine is making a strange noise.",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "success": False,
+        "message": "Evidence extraction failed safely.",
+    }
