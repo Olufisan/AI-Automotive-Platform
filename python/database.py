@@ -3,6 +3,20 @@ import os
 import psycopg
 
 
+
+def check_database_connection():
+      with psycopg.connect(
+         host=os.environ["DB_HOST"],
+         port=os.environ["DB_PORT"],
+         dbname=os.environ["DB_NAME"],
+          user=os.environ["DB_USER"],
+         password=os.environ["DB_PASSWORD"],
+        ) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+
+            return True
+
 def save_evidence(customer_message, evidence):
     with psycopg.connect(
         host=os.environ["DB_HOST"],

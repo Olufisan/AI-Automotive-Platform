@@ -2,7 +2,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 from automotive_evidence import AutomotiveEvidence
-from database import save_evidence
+from database import check_database_connection, save_evidence
 
 
 def test_save_evidence():
@@ -43,3 +43,28 @@ def test_save_evidence():
     assert record_id == 123
     mock_cursor.execute.assert_called_once()
     mock_connection.commit.assert_called_once()
+
+def test_check_database_connection():
+    mock_cursor = MagicMock()
+
+    mock_connection = MagicMock()
+    mock_connection.__enter__.return_value = mock_connection
+    mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+
+    with (
+        patch.dict(
+            os.environ,
+            {
+                "DB_HOST": "localhost",
+                "DB_PORT": "5432",
+                "DB_NAME": "test_db",
+                "DB_USER": "test_user",
+                "DB_PASSWORD": "test_password",
+            },
+        ),
+        patch("database.psycopg.connect", return_value=mock_connection),
+    ):
+        result = check_database_connection()
+
+    assert result is True
+    mock_cursor.execute.assert_called_once_with("SELECT 1")

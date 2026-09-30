@@ -2,14 +2,33 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 from api import app
 from automotive_evidence import AutomotiveEvidence
+
+
 client = TestClient(app)
+
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {
         "status": "healthy",
         "service": "AI Automotive Platform",
+        "database": "available",
     }
+
+def test_health_check_handles_database_failure():
+    with patch(
+        "api.check_database_connection",
+        side_effect=Exception("Database connection failed"),
+    ):
+        response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "unhealthy",
+        "service": "AI Automotive Platform",
+        "database": "unavailable",
+    }
+
 def test_extract_evidence():
     fake_evidence = AutomotiveEvidence(
         evidence_type="customer_reported",

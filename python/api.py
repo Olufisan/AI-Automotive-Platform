@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from pydantic import BaseModel, StrictStr
 
-from database import save_evidence
+from database import check_database_connection, save_evidence
 from evidence_extraction_test import extract_evidence
 
 
@@ -15,9 +15,20 @@ logging.basicConfig(level=logging.INFO)
 
 @app.get("/health")
 def health_check():
+    try:
+        check_database_connection()
+    except Exception:
+        logger.exception("Database health check failed")
+        return {
+            "status": "unhealthy",
+            "service": "AI Automotive Platform",
+            "database": "unavailable",
+        }
+
     return {
         "status": "healthy",
         "service": "AI Automotive Platform",
+        "database": "available",
     }
 
 
