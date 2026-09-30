@@ -7,13 +7,16 @@ from automotive_evidence import AutomotiveEvidence
 client = TestClient(app)
 
 def test_health_check():
-    response = client.get("/health")
+    with patch("api.check_database_connection", return_value=True):
+        response = client.get("/health")
+
     assert response.status_code == 200
     assert response.json() == {
         "status": "healthy",
         "service": "AI Automotive Platform",
         "database": "available",
     }
+
 
 def test_health_check_handles_database_failure():
     with patch(
