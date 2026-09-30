@@ -24,8 +24,14 @@ def health_check():
 class CustomerMessage(BaseModel):
     customer_message: StrictStr
 
+class EvidenceResponse(BaseModel):
+    success: bool
+    record_id: int | None = None
+    evidence: dict | None = None
+    message: str | None = None
 
-@app.post("/extract-evidence")
+
+@app.post("/extract-evidence", response_model=EvidenceResponse)
 def extract_customer_evidence(request: CustomerMessage):
     logger.info("Starting evidence extraction")
     evidence = extract_evidence(request.customer_message)

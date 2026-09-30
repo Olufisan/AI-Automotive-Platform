@@ -83,6 +83,8 @@ def test_extract_evidence_handles_ai_failure():
 
     assert response.status_code == 200
     assert response.json() == {
-        "success": False,
-        "message": "Evidence extraction failed safely.",
+         "success": False,
+         "record_id": None,
+         "evidence": None,
+         "message": "Evidence extraction failed safely.",
     }
