@@ -71,6 +71,7 @@ class EvidenceResponse(BaseModel):
     evidence: dict | None = None
     error_code: str | None = None
     message: str | None = None
+    processing_time_seconds: float | None = None
 
 
 @app.post("/extract-evidence", response_model=EvidenceResponse)
@@ -96,6 +97,10 @@ def extract_customer_evidence(request: CustomerMessage):
             "request_id": request_id,
             "error_code": "AI_EXTRACTION_FAILED",
             "message": "Evidence extraction failed safely.",
+            "processing_time_seconds": round(
+                time.perf_counter() - start_time,
+                2,
+            ),
         }
 
     logger.info(
@@ -119,6 +124,10 @@ def extract_customer_evidence(request: CustomerMessage):
             "request_id": request_id,
             "error_code": "DATABASE_SAVE_FAILED",
             "message": "Evidence could not be saved.",
+            "processing_time_seconds": round(
+                time.perf_counter() - start_time,
+                2,
+            ),
         }
 
     logger.info(
@@ -140,4 +149,5 @@ def extract_customer_evidence(request: CustomerMessage):
         "request_id": request_id,
         "record_id": record_id,
         "evidence": evidence.model_dump(),
+        "processing_time_seconds": round(elapsed_time, 2),
     }

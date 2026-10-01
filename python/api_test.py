@@ -66,7 +66,7 @@ def test_extract_evidence():
     assert data["evidence"]["observation"] == (
         "The brake pedal feels soft."
     )
-
+    assert data["processing_time_seconds"] >= 0
 
 def test_extract_evidence_rejects_non_string_message():
     response = client.post(
@@ -137,7 +137,9 @@ def test_extract_evidence_handles_ai_failure():
     assert data["record_id"] is None
     assert data["evidence"] is None
     assert data["error_code"] == "AI_EXTRACTION_FAILED"
+    assert data["processing_time_seconds"] >= 0
     assert data["message"] == "Evidence extraction failed safely."
+
 def test_extract_evidence_handles_database_failure():
     mock_evidence = AutomotiveEvidence(
         evidence_type="customer_reported",
@@ -173,6 +175,7 @@ def test_extract_evidence_handles_database_failure():
     assert data["record_id"] is None
     assert data["evidence"] is None
     assert data["error_code"] == "DATABASE_SAVE_FAILED"
+    assert data["processing_time_seconds"] >= 0
     assert data["message"] == "Evidence could not be saved."
 
 
