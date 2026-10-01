@@ -2,7 +2,9 @@ import logging
 import time
 import uuid
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StrictStr
 
 from database import check_database_connection, save_evidence
@@ -10,6 +12,29 @@ from evidence_extraction_test import extract_evidence
 
 
 app = FastAPI()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError,
+):
+    request_id = str(uuid.uuid4())
+
+    logger.warning(
+        "Request %s: Request validation failed: %s",
+        request_id,
+        exc.errors(),
+    )
+
+    return JSONResponse(
+    status_code=422,
+    content={
+        "detail": exc.errors(),
+        "request_id": request_id,
+    },
+)
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -41,6 +66,7 @@ class CustomerMessage(BaseModel):
 
 class EvidenceResponse(BaseModel):
     success: bool
+    request_id: str
     record_id: int | None = None
     evidence: dict | None = None
     message: str | None = None
@@ -61,9 +87,10 @@ def extract_customer_evidence(request: CustomerMessage):
     request_id,
 )
         return {
-            "success": False,
-            "message": "Evidence extraction failed safely.",
-        }
+    "success": False,
+    "request_id": request_id,
+    "message": "Evidence extraction failed safely.",
+}
 
     logger.info(
     "Request %s: Evidence extraction succeeded",
@@ -81,9 +108,10 @@ def extract_customer_evidence(request: CustomerMessage):
     request_id,
 )
         return {
-            "success": False,
-            "message": "Evidence could not be saved.",
-        }
+    "success": False,
+    "request_id": request_id,
+    "message": "Evidence could not be saved.",
+}
 
     logger.info(
     "Request %s: Evidence saved with record ID %s",
@@ -100,7 +128,8 @@ def extract_customer_evidence(request: CustomerMessage):
     )
     
     return {
-        "success": True,
-        "record_id": record_id,
-        "evidence": evidence.model_dump(),
-    }
+    "success": True,
+    "request_id": request_id,
+    "record_id": record_id,
+    "evidence": evidence.model_dump(),
+}

@@ -1,10 +1,13 @@
 from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+
 from api import app
 from automotive_evidence import AutomotiveEvidence
 
 
 client = TestClient(app)
+
 
 def test_health_check():
     with patch("api.check_database_connection", return_value=True):
@@ -33,6 +36,7 @@ def test_health_check_handles_database_failure():
         "database": "unavailable",
     }
 
+
 def test_extract_evidence():
     fake_evidence = AutomotiveEvidence(
         evidence_type="customer_reported",
@@ -53,14 +57,17 @@ def test_extract_evidence():
                 "customer_message": "The brake pedal feels soft.",
             },
         )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
+    assert data["request_id"]
     assert data["record_id"] == 999
     assert data["evidence"]["observation"] == (
         "The brake pedal feels soft."
     )
+
+
 def test_extract_evidence_rejects_non_string_message():
     response = client.post(
         "/extract-evidence",
@@ -68,7 +75,17 @@ def test_extract_evidence_rejects_non_string_message():
             "customer_message": 12345,
         },
     )
+
     assert response.status_code == 422
+
+    data = response.json()
+
+    assert data["request_id"]
+    assert data["detail"]
+
+    assert response.status_code == 422
+
+
 def test_extract_evidence_with_mocked_dependencies():
     fake_evidence = AutomotiveEvidence(
         evidence_type="customer_reported",
@@ -78,6 +95,7 @@ def test_extract_evidence_with_mocked_dependencies():
         duration="",
         confirmed_by_technician=False,
     )
+
     with (
         patch("api.extract_evidence", return_value=fake_evidence),
         patch("api.save_evidence", return_value=1000),
@@ -88,29 +106,38 @@ def test_extract_evidence_with_mocked_dependencies():
                 "customer_message": "The brake pedal feels soft.",
             },
         )
+
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
+    assert data["request_id"]
     assert data["record_id"] == 1000
     assert data["evidence"]["observation"] == (
-        "The brake pedal feels soft.")
+        "The brake pedal feels soft."
+    )
+
 
 def test_extract_evidence_handles_ai_failure():
     with patch("api.extract_evidence", return_value=None):
         response = client.post(
             "/extract-evidence",
             json={
-                "customer_message": "The engine is making a strange noise.",
+                "customer_message": (
+                    "The engine is making a strange noise."
+                ),
             },
         )
 
     assert response.status_code == 200
-    assert response.json() == {
-         "success": False,
-         "record_id": None,
-         "evidence": None,
-         "message": "Evidence extraction failed safely.",
-    }
+
+    data = response.json()
+
+    assert data["success"] is False
+    assert data["request_id"]
+    assert data["record_id"] is None
+    assert data["evidence"] is None
+    assert data["message"] == "Evidence extraction failed safely."
+
 
 def test_extract_evidence_handles_database_failure():
     mock_evidence = AutomotiveEvidence(
@@ -132,17 +159,22 @@ def test_extract_evidence_handles_database_failure():
         response = client.post(
             "/extract-evidence",
             json={
-                "customer_message": "The engine is making a strange noise.",
+                "customer_message": (
+                    "The engine is making a strange noise."
+                ),
             },
         )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "success": False,
-        "record_id": None,
-        "evidence": None,
-        "message": "Evidence could not be saved.",
-    }
+
+    data = response.json()
+
+    assert data["success"] is False
+    assert data["request_id"]
+    assert data["record_id"] is None
+    assert data["evidence"] is None
+    assert data["message"] == "Evidence could not be saved."
+
 
 def test_extract_evidence_rejects_message_over_2000_characters():
     response = client.post(
@@ -153,6 +185,7 @@ def test_extract_evidence_rejects_message_over_2000_characters():
     )
 
     assert response.status_code == 422
+
 
 def test_extract_evidence_accepts_message_at_2000_characters():
     with patch("api.extract_evidence", return_value=None):
