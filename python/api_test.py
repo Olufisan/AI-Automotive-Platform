@@ -136,9 +136,8 @@ def test_extract_evidence_handles_ai_failure():
     assert data["request_id"]
     assert data["record_id"] is None
     assert data["evidence"] is None
+    assert data["error_code"] == "AI_EXTRACTION_FAILED"
     assert data["message"] == "Evidence extraction failed safely."
-
-
 def test_extract_evidence_handles_database_failure():
     mock_evidence = AutomotiveEvidence(
         evidence_type="customer_reported",
@@ -173,6 +172,7 @@ def test_extract_evidence_handles_database_failure():
     assert data["request_id"]
     assert data["record_id"] is None
     assert data["evidence"] is None
+    assert data["error_code"] == "DATABASE_SAVE_FAILED"
     assert data["message"] == "Evidence could not be saved."
 
 
