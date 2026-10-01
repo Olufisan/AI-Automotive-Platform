@@ -31,6 +31,7 @@ def health_check():
         "status": "healthy",
         "service": "AI Automotive Platform",
         "database": "available",
+        "version": "1.0.0",
     }
 
 
