@@ -1,4 +1,5 @@
 import logging
+import time
 import uuid
 
 from fastapi import FastAPI
@@ -47,6 +48,7 @@ class EvidenceResponse(BaseModel):
 @app.post("/extract-evidence", response_model=EvidenceResponse)
 def extract_customer_evidence(request: CustomerMessage):
     request_id = str(uuid.uuid4())
+    start_time = time.perf_counter()
 
     logger.info("Request %s: Starting evidence extraction", request_id)
 
@@ -88,6 +90,14 @@ def extract_customer_evidence(request: CustomerMessage):
     record_id,
 )
 
+    elapsed_time = time.perf_counter() - start_time
+
+    logger.info(
+        "Request %s: Completed in %.2f seconds",
+        request_id,
+        elapsed_time,
+    )
+    
     return {
         "success": True,
         "record_id": record_id,
