@@ -95,9 +95,14 @@ Customer message:
             headers={"Content-Type": "application/json"},
         )
 
-        response = urllib.request.urlopen(request, timeout=60)
-        result = json.loads(response.read().decode())
+        try:
+            response = urllib.request.urlopen(request, timeout=60)
+            result = json.loads(response.read().decode())
 
+        except TimeoutError:
+            print("AI request timed out.")
+            print("Retrying AI extraction...")
+            continue
         raw_response = result["response"]
 
         print("AI response received.")
