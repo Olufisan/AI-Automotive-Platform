@@ -143,3 +143,24 @@ def test_extract_evidence_handles_database_failure():
         "evidence": None,
         "message": "Evidence could not be saved.",
     }
+
+def test_extract_evidence_rejects_message_over_2000_characters():
+    response = client.post(
+        "/extract-evidence",
+        json={
+            "customer_message": "A" * 2001,
+        },
+    )
+
+    assert response.status_code == 422
+
+def test_extract_evidence_accepts_message_at_2000_characters():
+    with patch("api.extract_evidence", return_value=None):
+        response = client.post(
+            "/extract-evidence",
+            json={
+                "customer_message": "A" * 2000,
+            },
+        )
+
+    assert response.status_code == 200

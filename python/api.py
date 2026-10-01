@@ -3,7 +3,7 @@ import time
 import uuid
 
 from fastapi import FastAPI
-from pydantic import BaseModel, StrictStr
+from pydantic import BaseModel, Field, StrictStr
 
 from database import check_database_connection, save_evidence
 from evidence_extraction_test import extract_evidence
@@ -36,7 +36,7 @@ def health_check():
 
 
 class CustomerMessage(BaseModel):
-    customer_message: StrictStr
+    customer_message: StrictStr = Field(max_length=2000)
 
 
 class EvidenceResponse(BaseModel):
