@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from fastapi import FastAPI
 from pydantic import BaseModel, StrictStr
@@ -45,18 +46,26 @@ class EvidenceResponse(BaseModel):
 
 @app.post("/extract-evidence", response_model=EvidenceResponse)
 def extract_customer_evidence(request: CustomerMessage):
-    logger.info("Starting evidence extraction")
+    request_id = str(uuid.uuid4())
+
+    logger.info("Request %s: Starting evidence extraction", request_id)
 
     evidence = extract_evidence(request.customer_message)
 
     if evidence is None:
-        logger.warning("Evidence extraction failed safely")
+        logger.warning(
+    "Request %s: Evidence extraction failed safely",
+    request_id,
+)
         return {
             "success": False,
             "message": "Evidence extraction failed safely.",
         }
 
-    logger.info("Evidence extraction succeeded")
+    logger.info(
+    "Request %s: Evidence extraction succeeded",
+    request_id,
+)
 
     try:
         record_id = save_evidence(
@@ -64,13 +73,20 @@ def extract_customer_evidence(request: CustomerMessage):
             evidence,
         )
     except Exception:
-        logger.exception("Failed to save evidence to database")
+        logger.exception(
+    "Request %s: Failed to save evidence to database",
+    request_id,
+)
         return {
             "success": False,
             "message": "Evidence could not be saved.",
         }
 
-    logger.info("Evidence saved with record ID %s", record_id)
+    logger.info(
+    "Request %s: Evidence saved with record ID %s",
+    request_id,
+    record_id,
+)
 
     return {
         "success": True,
