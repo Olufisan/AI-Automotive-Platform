@@ -74,6 +74,9 @@ makes a system or cause worth investigating.
 
 Do not present the reasoning as a confirmed fault.
 
+The starting_behaviour value is customer-supplied information.
+If you use "turns over slowly" in a reasoning_links entry,
+its evidence_source must be "customer_reported".
 For slow engine cranking, prioritise investigation of:
 1. battery/electrical power supply
 2. battery connections/main electrical connections
@@ -119,7 +122,6 @@ request_body = json.dumps(
     }
 ).encode("utf-8")
 
-
 request = urllib.request.Request(
     "http://localhost:11434/api/generate",
     data=request_body,
@@ -128,21 +130,22 @@ request = urllib.request.Request(
 )
 
 
-response = urllib.request.urlopen(
-    request,
-    timeout=120,
-)
+if __name__ == "__main__":
+    response = urllib.request.urlopen(
+        request,
+        timeout=120,
+    )
 
-result = json.loads(response.read().decode("utf-8"))
+    result = json.loads(response.read().decode("utf-8"))
 
-raw_response = result["response"]
+    raw_response = result["response"]
 
-print("\nRaw AI response:")
-print(raw_response)
+    print("\nRaw AI response:")
+    print(raw_response)
 
-analysis_data = json.loads(raw_response)
+    analysis_data = json.loads(raw_response)
 
-analysis = DiagnosticAnalysis.model_validate(analysis_data)
+    analysis = DiagnosticAnalysis.model_validate(analysis_data)
 
-print("\nPydantic validation passed")
-print(json.dumps(analysis.model_dump(), indent=2))
+    print("\nPydantic validation passed")
+    print(json.dumps(analysis.model_dump(), indent=2))

@@ -99,25 +99,26 @@ request = urllib.request.Request(
 )
 
 
-response = urllib.request.urlopen(request, timeout=120)
-result = json.loads(response.read().decode())
+if __name__ == "__main__":
+    response = urllib.request.urlopen(request, timeout=120)
+    result = json.loads(response.read().decode())
 
-raw_response = result["response"]
+    raw_response = result["response"]
 
-print("Raw AI response:")
-print(raw_response)
+    print("Raw AI response:")
+    print(raw_response)
 
-try:
-    parsed_json = json.loads(raw_response)
-    analysis = DiagnosticAnalysis.model_validate(parsed_json)
+    try:
+        parsed_json = json.loads(raw_response)
+        analysis = DiagnosticAnalysis.model_validate(parsed_json)
 
-    print("\nDiagnostic analysis validation passed")
-    print(analysis.model_dump_json(indent=2))
+        print("\nDiagnostic analysis validation passed")
+        print(analysis.model_dump_json(indent=2))
 
-except json.JSONDecodeError as error:
-    print("\nAI returned invalid JSON")
-    print(error)
+    except json.JSONDecodeError as error:
+        print("\nAI returned invalid JSON")
+        print(error)
 
-except ValidationError as error:
-    print("\nDiagnostic analysis validation failed")
-    print(error)
+    except ValidationError as error:
+        print("\nDiagnostic analysis validation failed")
+        print(error)
