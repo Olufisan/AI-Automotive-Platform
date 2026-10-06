@@ -1,11 +1,14 @@
 import json
 import urllib.request
 
+from pydantic import BaseModel
 
-selected_information = "starting_behaviour"
+class DiagnosticQuestion(BaseModel):
+    question: str
 
 
-prompt = f"""
+def generate_question(selected_information):
+    prompt = f"""
 Return JSON only.
 
 You are a Virtual Automotive Customer Service Assistant.
@@ -45,25 +48,31 @@ Return exactly this JSON structure:
 }}
 """
 
+    payload = {
+        "model": "qwen3:1.7b",
+        "prompt": prompt,
+        "stream": False,
+        "think": False,
+    }
 
-payload = {
-    "model": "qwen3:1.7b",
-    "prompt": prompt,
-    "stream": False,
-    "think": False,
-}
+    request = urllib.request.Request(
+        "http://localhost:11434/api/generate",
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"},
+    )
 
+    response = urllib.request.urlopen(request, timeout=60)
+    result = json.loads(response.read().decode())
 
-request = urllib.request.Request(
-    "http://localhost:11434/api/generate",
-    data=json.dumps(payload).encode(),
-    headers={"Content-Type": "application/json"},
+    return DiagnosticQuestion.model_validate_json(
+    result["response"]
 )
 
 
-response = urllib.request.urlopen(request, timeout=60)
-result = json.loads(response.read().decode())
+if __name__ == "__main__":
+    selected_information = "starting_behaviour"
 
+    question = generate_question(selected_information)
 
-print("Raw AI response:")
-print(result["response"])
+    print("Generated question:")
+    print(question.question)
