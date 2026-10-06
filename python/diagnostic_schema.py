@@ -30,6 +30,13 @@ class StartingBehaviourAnswer(BaseModel):
         "unknown",
     ]
 
+class DiagnosticAnswer(BaseModel):
+    information_type: str
+    answer: str
+
+class FrequencyAnswer(BaseModel):
+    frequency: str
+
 
 class Vehicle(BaseModel):
     make: str
