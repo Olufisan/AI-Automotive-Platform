@@ -1,6 +1,7 @@
 from diagnostic_schema import DiagnosticAnswer
 from answer_update_test import update_customer_facts
 from answer_extraction_test import extract_answer
+from question_generation_test import generate_question
 from question_selector_test import (
     find_missing_information,
     choose_next_question,
@@ -270,3 +271,47 @@ def test_ai_answer_updates_facts_and_selects_next_question():
 
     assert "frequency" not in missing_information
     assert next_information == "starting_behaviour"
+
+def test_ai_answer_flow_generates_next_question():
+    customer_facts = {
+        "vehicle": {
+            "make": "Volkswagen",
+            "model": "Golf",
+            "year": 2018,
+        },
+        "complaint": (
+            "The vehicle is difficult to start after driving "
+            "for about 30 minutes."
+        ),
+        "symptoms": [],
+        "warning_lights": [],
+    }
+
+    customer_answer = "It happens once or twice a week."
+
+    answer = extract_answer(
+        customer_answer,
+        "frequency",
+    )
+
+    assert answer is not None
+
+    updated_facts = update_customer_facts(
+        customer_facts,
+        answer,
+    )
+
+    missing_information = find_missing_information(
+        updated_facts,
+    )
+
+    next_information = choose_next_question(
+        missing_information,
+    )
+
+    next_question = generate_question(
+        next_information,
+    )
+
+    assert next_information == "starting_behaviour"
+    assert next_question.question
