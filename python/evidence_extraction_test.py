@@ -90,7 +90,7 @@ Customer message:
         }
 
         request = urllib.request.Request(
-            "http://localhost:11434/api/generate",
+            "http://host.docker.internal:11434/api/generate",
             data=json.dumps(payload).encode(),
             headers={"Content-Type": "application/json"},
         )
