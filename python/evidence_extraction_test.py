@@ -52,12 +52,14 @@ Field rules:
   such as when, where, or under what conditions the problem occurs.
   Do NOT put duration information in context.
 
-- duration: copy the exact duration explicitly stated by the customer.
-  If the customer does not state a duration, you MUST return an empty string.
+- duration: copy the exact time or duration explicitly stated by the customer.
+  This includes expressions such as "yesterday", "today", "three days ago",
+  "last week", "for two weeks", "for three months", "occasionally",
+  "sometimes", or "frequently".
+  If the customer does not explicitly state a time or duration,
+  return an empty string.
   Never infer or invent a duration.
-  Do not use words such as "immediate", "sudden", "ongoing",
-  "recent", or similar unless the customer explicitly used them
-  as a duration.
+  Only use a time or duration that appears explicitly in the customer message.
 
 - confirmed_by_technician: true only when the customer explicitly says
   that a technician, mechanic, garage, or workshop inspected, checked,
@@ -147,6 +149,15 @@ Customer message:
             "months",
             "year",
             "years",
+            "yesterday",
+            "today",
+            "tomorrow",
+            "recently",
+            "occasionally",
+            "sometimes",
+            "frequently",
+            "always",
+            "never",
         }
 
             if evidence.duration:
