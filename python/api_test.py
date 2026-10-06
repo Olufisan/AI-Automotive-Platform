@@ -246,3 +246,26 @@ def test_extract_evidence_rejects_missing_customer_message():
 
     assert data["request_id"]
     assert data["detail"]
+
+def test_extract_evidence_handles_unexpected_ai_exception():
+    with patch(
+        "api.extract_evidence",
+        side_effect=RuntimeError("Unexpected AI failure"),
+    ):
+        response = client.post(
+            "/extract-evidence",
+            json={
+                "customer_message": "The engine is making a strange noise.",
+            },
+        )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["success"] is False
+    assert data["request_id"]
+    assert data["record_id"] is None
+    assert data["evidence"] is None
+    assert data["error_code"] == "AI_EXTRACTION_EXCEPTION"
+    assert data["message"] == "AI extraction failed unexpectedly."
+    assert data["processing_time_seconds"] >= 0

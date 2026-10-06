@@ -84,13 +84,31 @@ def extract_customer_evidence(request: CustomerMessage):
         request_id,
     )
 
-    evidence = extract_evidence(request.customer_message)
+    try:
+        evidence = extract_evidence(request.customer_message)
 
-    if evidence is None:
+    except Exception:
+        logger.exception(
+            "Request %s: Unexpected AI extraction failure",
+            request_id,
+        )
         logger.warning(
             "Request %s: Evidence extraction failed safely",
             request_id,
         )
+
+        return {
+        "success": False,
+        "request_id": request_id,
+        "error_code": "AI_EXTRACTION_EXCEPTION",
+        "message": "AI extraction failed unexpectedly.",
+        "processing_time_seconds": round(
+            time.perf_counter() - start_time,
+            2,
+        ),
+    }
+
+    if evidence is None:
 
         return {
             "success": False,
