@@ -1,0 +1,20 @@
+services:
+  ai-automotive-api:
+    build:
+      context: ./python
+    container_name: ai-automotive-api
+    environment:
+      DB_HOST: n8n-postgres
+      DB_PORT: 5432
+      DB_NAME: automotive
+      DB_USER: n8n
+      DB_PASSWORD: n8npassword
+    ports:
+      - "8000:8000"
+    networks:
+      - automotive-network
+
+networks:
+  automotive-network:
+    external: true
+    name: automotive-network
