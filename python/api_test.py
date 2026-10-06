@@ -200,3 +200,36 @@ def test_extract_evidence_accepts_message_at_2000_characters():
         )
 
     assert response.status_code == 200
+
+def test_extract_evidence_saves_correct_data():
+    fake_evidence = AutomotiveEvidence(
+        evidence_type="customer_reported",
+        observation="The brake pedal feels soft.",
+        context="",
+        severity_or_intensity="not specified",
+        duration="",
+        confirmed_by_technician=False,
+    )
+
+    with (
+        patch("api.extract_evidence", return_value=fake_evidence),
+        patch("api.save_evidence", return_value=1001) as mock_save,
+    ):
+        response = client.post(
+            "/extract-evidence",
+            json={
+                "customer_message": "The brake pedal feels soft.",
+            },
+        )
+
+    assert response.status_code == 200
+
+    mock_save.assert_called_once_with(
+        "The brake pedal feels soft.",
+        fake_evidence,
+    )
+
+    data = response.json()
+
+    assert data["success"] is True
+    assert data["record_id"] == 1001
