@@ -38,6 +38,9 @@ For "starting_behaviour", ask whether the engine:
 - turns over slowly
 - does not turn over at all
 
+For "warning_lights", ask whether any warning lights
+are showing on the dashboard.
+
 Use simple language that a normal vehicle owner
 can understand.
 

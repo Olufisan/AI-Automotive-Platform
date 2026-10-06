@@ -1,3 +1,9 @@
+from question_generation_test import generate_question
+from question_selector_test import (
+    find_missing_information,
+    choose_next_question,
+)
+
 customer_facts = {
     "vehicle": {
         "make": "Volkswagen",
@@ -44,27 +50,35 @@ def choose_next_information(missing):
 
     return None
 
-
-missing_information = find_missing_information(
-    customer_facts
-)
-
-next_information = choose_next_information(
-    missing_information
-)
+if __name__ == "__main__":
 
 
-print("Current customer facts:")
+    missing_information = find_missing_information(
+        customer_facts
+    )
 
-for key, value in customer_facts.items():
-    print(f"{key}: {value}")
+    next_information = choose_next_question(
+        missing_information
+
+    )
+
+    next_question = generate_question(next_information)
 
 
-print("\nMissing information:")
+    print("Current customer facts:")
 
-for item in missing_information:
-    print(f"- {item}")
+    for key, value in customer_facts.items():
+        print(f"{key}: {value}")
 
 
-print("\nNext information to collect:")
-print(next_information)
+    print("\nMissing information:")
+
+    for item in missing_information:
+        print(f"- {item}")
+
+
+    print("\nNext information to collect:")
+    print(next_information)
+
+    print("\nGenerated question:")
+    print(next_question.question)   
