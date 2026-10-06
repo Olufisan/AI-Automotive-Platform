@@ -20,36 +20,6 @@ customer_facts = {
     "frequency": "once or twice a week",
 }
 
-
-priority = [
-    "starting_behaviour",
-    "frequency",
-    "warning_lights",
-]
-
-
-def find_missing_information(facts):
-    missing = []
-
-    if not facts.get("starting_behaviour"):
-        missing.append("starting_behaviour")
-
-    if not facts.get("frequency"):
-        missing.append("frequency")
-
-    if not facts.get("warning_lights"):
-        missing.append("warning_lights")
-
-    return missing
-
-
-def choose_next_information(missing):
-    for item in priority:
-        if item in missing:
-            return item
-
-    return None
-
 if __name__ == "__main__":
 
 
