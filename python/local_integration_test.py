@@ -26,4 +26,5 @@ def test_real_extract_evidence():
     assert evidence["evidence_type"] == "customer_reported"
     assert evidence["observation"]
     assert evidence["severity_or_intensity"] == "not specified"
+    assert evidence["duration"] == "yesterday"
     assert evidence["confirmed_by_technician"] is False
