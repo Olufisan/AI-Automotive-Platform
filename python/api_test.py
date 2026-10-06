@@ -233,3 +233,16 @@ def test_extract_evidence_saves_correct_data():
 
     assert data["success"] is True
     assert data["record_id"] == 1001
+
+def test_extract_evidence_rejects_missing_customer_message():
+    response = client.post(
+        "/extract-evidence",
+        json={},
+    )
+
+    assert response.status_code == 422
+
+    data = response.json()
+
+    assert data["request_id"]
+    assert data["detail"]
