@@ -44,17 +44,16 @@ def choose_next_question(missing):
     return None
 
 
-missing_information = find_missing_information(customer_facts)
+if __name__ == "__main__":
+    missing_information = find_missing_information(customer_facts)
 
-next_question = choose_next_question(missing_information)
+    next_question = choose_next_question(missing_information)
 
+    print("Missing information:")
 
-print("Missing information:")
+    for item in missing_information:
+        print(f"- {item}")
 
-for item in missing_information:
-    print(f"- {item}")
+    print("\nNext information to collect:")
 
-
-print("\nNext information to collect:")
-
-print(next_question)
+    print(next_question)
