@@ -1,4 +1,5 @@
 ﻿import json
+import os
 import urllib.request
 
 from pydantic import ValidationError
@@ -85,20 +86,27 @@ Customer message:
 """
 
         payload = {
-            "model": "qwen3:1.7b",
+            "model": os.getenv("OLLAMA_MODEL", "qwen3:1.7b"),
             "prompt": prompt,
             "stream": False,
             "think": False,
         }
 
         request = urllib.request.Request(
-            "http://localhost:11434/api/generate",
-            data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json"},
-        )
+            os.getenv(
+             "OLLAMA_URL",
+             "http://localhost:11434/api/generate",
+            ),
+    data=json.dumps(payload).encode(),
+    headers={"Content-Type": "application/json"},
+
+       )
 
         try:
-            response = urllib.request.urlopen(request, timeout=60)
+            response = urllib.request.urlopen(
+                 request,   
+                 timeout=int(os.getenv("OLLAMA_TIMEOUT", "60")),
+       )
             result = json.loads(response.read().decode())
 
         except TimeoutError:
