@@ -12,7 +12,14 @@ from diagnostic_orchestrator import process_customer_answer
 from evidence_extraction_test import extract_evidence
 
 
-app = FastAPI()
+app = FastAPI(
+    title="AI Automotive Platform API",
+    description=(
+        "AI-powered automotive diagnostic and evidence "
+        "extraction API."
+    ),
+    version="1.0.0",
+)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
