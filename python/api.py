@@ -6,9 +6,9 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StrictStr
-from diagnostic_orchestrator import process_customer_answer
 
 from database import check_database_connection, save_evidence
+from diagnostic_orchestrator import process_customer_answer
 from evidence_extraction_test import extract_evidence
 
 
@@ -64,12 +64,34 @@ def health_check():
 class CustomerMessage(BaseModel):
     customer_message: StrictStr = Field(max_length=2000)
 
+
 class DiagnosticRequest(BaseModel):
     customer_facts: dict
     customer_answer: StrictStr = Field(max_length=2000)
     information_type: StrictStr
 
-@app.post("/process-diagnostic")
+
+class DiagnosticResponse(BaseModel):
+    success: bool
+    result: dict | None = None
+    error_code: str | None = None
+    message: str | None = None
+
+
+class EvidenceResponse(BaseModel):
+    success: bool
+    request_id: str
+    record_id: int | None = None
+    evidence: dict | None = None
+    error_code: str | None = None
+    message: str | None = None
+    processing_time_seconds: float | None = None
+
+
+@app.post(
+    "/process-diagnostic",
+    response_model=DiagnosticResponse,
+)
 def process_diagnostic(request: DiagnosticRequest):
     result = process_customer_answer(
         request.customer_facts,
@@ -90,16 +112,6 @@ def process_diagnostic(request: DiagnosticRequest):
     }
 
 
-class EvidenceResponse(BaseModel):
-    success: bool
-    request_id: str
-    record_id: int | None = None
-    evidence: dict | None = None
-    error_code: str | None = None
-    message: str | None = None
-    processing_time_seconds: float | None = None
-
-
 @app.post("/extract-evidence", response_model=EvidenceResponse)
 def extract_customer_evidence(request: CustomerMessage):
     request_id = str(uuid.uuid4())
@@ -111,7 +123,9 @@ def extract_customer_evidence(request: CustomerMessage):
     )
 
     try:
-        evidence = extract_evidence(request.customer_message)
+        evidence = extract_evidence(
+            request.customer_message,
+        )
 
     except Exception:
         logger.exception(
@@ -124,18 +138,17 @@ def extract_customer_evidence(request: CustomerMessage):
         )
 
         return {
-        "success": False,
-        "request_id": request_id,
-        "error_code": "AI_EXTRACTION_EXCEPTION",
-        "message": "AI extraction failed unexpectedly.",
-        "processing_time_seconds": round(
-            time.perf_counter() - start_time,
-            2,
-        ),
-    }
+            "success": False,
+            "request_id": request_id,
+            "error_code": "AI_EXTRACTION_EXCEPTION",
+            "message": "AI extraction failed unexpectedly.",
+            "processing_time_seconds": round(
+                time.perf_counter() - start_time,
+                2,
+            ),
+        }
 
     if evidence is None:
-
         return {
             "success": False,
             "request_id": request_id,
@@ -157,6 +170,7 @@ def extract_customer_evidence(request: CustomerMessage):
             request.customer_message,
             evidence,
         )
+
     except Exception:
         logger.exception(
             "Request %s: Failed to save evidence to database",
@@ -193,5 +207,8 @@ def extract_customer_evidence(request: CustomerMessage):
         "request_id": request_id,
         "record_id": record_id,
         "evidence": evidence.model_dump(),
-        "processing_time_seconds": round(elapsed_time, 2),
+        "processing_time_seconds": round(
+            elapsed_time,
+            2,
+        ),
     }
