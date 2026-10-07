@@ -47,7 +47,14 @@ async def validation_exception_handler(
     )
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    summary="Check API and database health",
+    description=(
+        "Checks whether the AI Automotive Platform API is running "
+        "and whether a connection to the PostgreSQL database is available."
+    ),
+)
 def health_check():
     try:
         check_database_connection()
