@@ -100,7 +100,14 @@ class EvidenceResponse(BaseModel):
 @app.post(
     "/process-diagnostic",
     response_model=DiagnosticResponse,
+    summary="Process a diagnostic answer",
+    description=(
+        "Extracts a customer's answer, updates the diagnostic facts, "
+        "identifies missing information, and generates the next "
+        "diagnostic question."
+    ),
 )
+
 def process_diagnostic(request: DiagnosticRequest):
     request_id = str(uuid.uuid4())
     start_time = time.perf_counter()
@@ -151,7 +158,16 @@ def process_diagnostic(request: DiagnosticRequest):
     }
 
 
-@app.post("/extract-evidence", response_model=EvidenceResponse)
+@app.post(
+    "/extract-evidence",
+    response_model=EvidenceResponse,
+    summary="Extract customer evidence",
+    description=(
+        "Extracts structured evidence from a customer's message "
+        "using explicit customer-reported information and validates "
+        "the result before returning it."
+    ),
+)
 def extract_customer_evidence(request: CustomerMessage):
     request_id = str(uuid.uuid4())
     start_time = time.perf_counter()
