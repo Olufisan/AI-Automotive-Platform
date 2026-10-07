@@ -1,5 +1,6 @@
 ﻿import json
 import os
+import urllib.error
 import urllib.request
 
 from pydantic import ValidationError
@@ -113,6 +114,13 @@ Customer message:
             print("AI request timed out.")
             print("Retrying AI extraction...")
             continue
+
+        except urllib.error.URLError as error:
+            print("AI connection failed.")
+            print(error)
+            print("Retrying AI extraction...")
+            continue
+        
         raw_response = result["response"]
 
         print("AI response received.")

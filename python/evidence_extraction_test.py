@@ -1,4 +1,5 @@
 import json
+import urllib.error
 from unittest.mock import patch
 
 from evidence_extraction import extract_evidence
@@ -214,3 +215,16 @@ def test_extract_evidence_returns_empty_duration_when_not_stated():
 
     assert result is not None
     assert result.duration == ""
+    
+
+def test_extract_evidence_handles_connection_error():
+    with patch(
+        "evidence_extraction.urllib.request.urlopen",
+        side_effect=urllib.error.URLError("Ollama unavailable"),
+    ):
+        result = extract_evidence(
+            "The brake pedal feels soft.",
+            max_attempts=1,
+        )
+
+    assert result is None
