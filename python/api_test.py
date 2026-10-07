@@ -269,3 +269,81 @@ def test_extract_evidence_handles_unexpected_ai_exception():
     assert data["error_code"] == "AI_EXTRACTION_EXCEPTION"
     assert data["message"] == "AI extraction failed unexpectedly."
     assert data["processing_time_seconds"] >= 0
+
+def test_process_diagnostic_success():
+    fake_result = {
+        "answer": {
+            "value": "It happens when the engine is cold.",
+        },
+        "updated_facts": {
+            "vehicle": "2018 Volkswagen Golf",
+            "conditions": "cold start",
+        },
+        "next_information": "warning_lights",
+        "next_question": "Are any warning lights showing?",
+    }
+
+    with patch(
+        "api.process_customer_answer",
+        return_value=fake_result,
+    ) as mock_process:
+        response = client.post(
+            "/process-diagnostic",
+            json={
+                "customer_facts": {
+                    "vehicle": "2018 Volkswagen Golf",
+                },
+                "customer_answer": (
+                    "It happens when the engine is cold."
+                ),
+                "information_type": "conditions",
+            },
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["success"] is True
+    assert data["request_id"]
+    assert data["result"] == fake_result
+    assert data["processing_time_seconds"] >= 0
+
+    mock_process.assert_called_once_with(
+        {
+            "vehicle": "2018 Volkswagen Golf",
+        },
+        "It happens when the engine is cold.",
+        "conditions",
+    )
+
+def test_process_diagnostic_handles_failure():
+    with patch(
+        "api.process_customer_answer",
+        return_value=None,
+    ):
+        response = client.post(
+            "/process-diagnostic",
+            json={
+                "customer_facts": {
+                    "vehicle": "2018 Volkswagen Golf",
+                },
+                "customer_answer": (
+                    "It happens when the engine is cold."
+                ),
+                "information_type": "conditions",
+            },
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["success"] is False
+    assert data["request_id"]
+    assert data["result"] is None
+    assert data["error_code"] == "DIAGNOSTIC_PROCESSING_FAILED"
+    assert data["message"] == (
+        "Diagnostic processing failed safely."
+    )
+    assert data["processing_time_seconds"] >= 0
