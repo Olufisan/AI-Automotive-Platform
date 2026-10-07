@@ -101,13 +101,6 @@ class DiagnosticResponse(BaseModel):
     request_id: str
     processing_time_seconds: float | None = None
 
-class DiagnosticResult(BaseModel):
-    answer: dict
-    updated_facts: dict
-    next_information: str | None = None
-    next_question: str | None = None
-
-
 class EvidenceResponse(BaseModel):
     success: bool
     request_id: str
