@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StrictStr
 from diagnostic_schema import DiagnosticAnswer
+from automotive_evidence import AutomotiveEvidence
 
 from database import check_database_connection, save_evidence
 from diagnostic_orchestrator import process_customer_answer
@@ -111,7 +112,7 @@ class EvidenceResponse(BaseModel):
     success: bool
     request_id: str
     record_id: int | None = None
-    evidence: dict | None = None
+    evidence: AutomotiveEvidence | None = None
     error_code: str | None = None
     message: str | None = None
     processing_time_seconds: float | None = None
