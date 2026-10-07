@@ -120,8 +120,13 @@ Customer message:
             print(error)
             print("Retrying AI extraction...")
             continue
-        
-        raw_response = result["response"]
+
+        raw_response = result.get("response")
+
+        if not raw_response:
+            print("AI response did not contain generated content.")
+            print("Retrying AI extraction...")
+            continue
 
         print("AI response received.")
 

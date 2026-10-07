@@ -60,8 +60,7 @@ def test_extract_evidence_rejects_inferred_technician_confirmation():
             max_attempts=1,
         )
 
-    assert result is None
-
+        assert result is None
 
 def test_extract_evidence_rejects_inferred_severity():
     mock_response = {
@@ -215,13 +214,31 @@ def test_extract_evidence_returns_empty_duration_when_not_stated():
 
     assert result is not None
     assert result.duration == ""
-    
+
 
 def test_extract_evidence_handles_connection_error():
     with patch(
         "evidence_extraction.urllib.request.urlopen",
         side_effect=urllib.error.URLError("Ollama unavailable"),
     ):
+        result = extract_evidence(
+            "The brake pedal feels soft.",
+            max_attempts=1,
+        )
+
+    assert result is None
+
+
+def test_extract_evidence_handles_missing_ai_response():
+    mock_response = {}
+
+    with patch(
+        "evidence_extraction.urllib.request.urlopen"
+    ) as mock_urlopen:
+        mock_urlopen.return_value.read.return_value = json.dumps(
+            mock_response
+        ).encode()
+
         result = extract_evidence(
             "The brake pedal feels soft.",
             max_attempts=1,
