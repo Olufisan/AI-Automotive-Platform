@@ -36,6 +36,8 @@ def test_process_diagnostic_endpoint():
     data = response.json()
 
     assert data["success"] is True
+    assert data["request_id"]
+    assert data["processing_time_seconds"] is not None
     assert data["result"]["updated_facts"]["frequency"] == (
         "It happens once or twice a week."
     )
@@ -71,6 +73,8 @@ def test_process_diagnostic_endpoint_handles_failure(monkeypatch):
     data = response.json()
 
     assert data["success"] is False
+    assert data["request_id"]
+    assert data["processing_time_seconds"] is not None
     assert data["error_code"] == (
         "DIAGNOSTIC_PROCESSING_FAILED"
     )

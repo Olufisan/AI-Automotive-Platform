@@ -76,6 +76,8 @@ class DiagnosticResponse(BaseModel):
     result: dict | None = None
     error_code: str | None = None
     message: str | None = None
+    request_id: str
+    processing_time_seconds: float | None = None
 
 
 class EvidenceResponse(BaseModel):
@@ -93,22 +95,52 @@ class EvidenceResponse(BaseModel):
     response_model=DiagnosticResponse,
 )
 def process_diagnostic(request: DiagnosticRequest):
+    request_id = str(uuid.uuid4())
+    start_time = time.perf_counter()
+
+    logger.info(
+        "Request %s: Starting diagnostic processing",
+        request_id,
+    )
+
     result = process_customer_answer(
         request.customer_facts,
         request.customer_answer,
         request.information_type,
     )
 
+    elapsed_time = time.perf_counter() - start_time
+
     if result is None:
+        logger.warning(
+            "Request %s: Diagnostic processing failed safely",
+            request_id,
+        )
+
         return {
             "success": False,
+            "request_id": request_id,
             "error_code": "DIAGNOSTIC_PROCESSING_FAILED",
             "message": "Diagnostic processing failed safely.",
+            "processing_time_seconds": round(
+                elapsed_time,
+                2,
+            ),
         }
+
+    logger.info(
+        "Request %s: Diagnostic processing succeeded",
+        request_id,
+    )
 
     return {
         "success": True,
+        "request_id": request_id,
         "result": result,
+        "processing_time_seconds": round(
+            elapsed_time,
+            2,
+        ),
     }
 
 
