@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StrictStr
+from diagnostic_orchestrator import process_customer_answer
 
 from database import check_database_connection, save_evidence
 from evidence_extraction_test import extract_evidence
@@ -62,6 +63,31 @@ def health_check():
 
 class CustomerMessage(BaseModel):
     customer_message: StrictStr = Field(max_length=2000)
+
+class DiagnosticRequest(BaseModel):
+    customer_facts: dict
+    customer_answer: StrictStr = Field(max_length=2000)
+    information_type: StrictStr
+
+@app.post("/process-diagnostic")
+def process_diagnostic(request: DiagnosticRequest):
+    result = process_customer_answer(
+        request.customer_facts,
+        request.customer_answer,
+        request.information_type,
+    )
+
+    if result is None:
+        return {
+            "success": False,
+            "error_code": "DIAGNOSTIC_PROCESSING_FAILED",
+            "message": "Diagnostic processing failed safely.",
+        }
+
+    return {
+        "success": True,
+        "result": result,
+    }
 
 
 class EvidenceResponse(BaseModel):
