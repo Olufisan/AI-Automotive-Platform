@@ -90,3 +90,46 @@ def test_process_customer_answer_returns_none_when_extraction_fails(
     )
 
     assert result is None
+
+def test_process_customer_answer_progresses_through_multiple_questions():
+    customer_facts = {
+        "vehicle": {
+            "make": "Volkswagen",
+            "model": "Golf",
+            "year": 2018,
+        },
+        "complaint": (
+            "The vehicle is difficult to start after driving "
+            "for about 30 minutes."
+        ),
+        "symptoms": [],
+        "warning_lights": [],
+    }
+
+    first_result = process_customer_answer(
+        customer_facts,
+        "It starts normally when the engine is cold.",
+        "starting_behaviour",
+    )
+
+    assert first_result is not None
+    assert (
+        first_result["updated_facts"]["starting_behaviour"]
+        == "It starts normally when the engine is cold."
+    )
+    assert first_result["next_information"] == "frequency"
+    assert first_result["next_question"]
+
+    second_result = process_customer_answer(
+        first_result["updated_facts"],
+        "It happens once or twice a week.",
+        "frequency",
+    )
+
+    assert second_result is not None
+    assert (
+        second_result["updated_facts"]["frequency"]
+        == "It happens once or twice a week."
+    )
+    assert second_result["next_information"] == "warning_lights"
+    assert second_result["next_question"]
