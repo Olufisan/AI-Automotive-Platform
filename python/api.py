@@ -11,7 +11,7 @@ from automotive_evidence import AutomotiveEvidence
 
 from database import check_database_connection, save_evidence
 from diagnostic_orchestrator import process_customer_answer
-from evidence_extraction_test import extract_evidence
+from evidence_extraction import extract_evidence
 
 
 app = FastAPI(

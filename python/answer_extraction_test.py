@@ -9,6 +9,7 @@ from diagnostic_schema import (
     StartingBehaviourAnswer,
 )
 
+
 def extract_answer(customer_answer, information_type):
     prompt = f"""
 Return JSON only.
@@ -76,20 +77,21 @@ the requested information, return:
 
     result = json.loads(
         response.read().decode()
-
-    
     )
-
-    
 
     try:
         parsed_json = json.loads(
             result["response"]
         )
 
-        return DiagnosticAnswer.model_validate(
+        answer = DiagnosticAnswer.model_validate(
             parsed_json
         )
+
+        if answer.answer != "unknown":
+            answer.answer = customer_answer.strip()
+
+        return answer
 
     except json.JSONDecodeError as error:
         print("\nAI returned invalid JSON")
@@ -100,6 +102,7 @@ the requested information, return:
         print("\nPydantic validation failed")
         print(error)
         return None
+
 
 def extract_starting_behaviour(customer_answer):
     prompt = f"""
@@ -195,6 +198,7 @@ return:
         print("\nPydantic validation failed")
         print(error)
         return None
+
 
 if __name__ == "__main__":
     customer_answer = "It turns over slowly."
