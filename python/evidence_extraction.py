@@ -1,11 +1,11 @@
 ﻿import json
-import os
 import urllib.error
 import urllib.request
 
 from pydantic import ValidationError
 
 from automotive_evidence import AutomotiveEvidence
+from config import OLLAMA_MODEL, OLLAMA_TIMEOUT, OLLAMA_URL
 
 
 def extract_evidence(customer_message, max_attempts=2):
@@ -87,17 +87,15 @@ Customer message:
 """
 
         payload = {
-            "model": os.getenv("OLLAMA_MODEL", "qwen3:1.7b"),
+            "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False,
             "think": False,
         }
 
         request = urllib.request.Request(
-            os.getenv(
-             "OLLAMA_URL",
-             "http://localhost:11434/api/generate",
-            ),
+            OLLAMA_URL,
+
     data=json.dumps(payload).encode(),
     headers={"Content-Type": "application/json"},
 
@@ -106,7 +104,7 @@ Customer message:
         try:
             response = urllib.request.urlopen(
                  request,   
-                 timeout=int(os.getenv("OLLAMA_TIMEOUT", "60")),
+                 timeout=OLLAMA_TIMEOUT,
        )
             result = json.loads(response.read().decode())
 
