@@ -54,3 +54,39 @@ def test_process_customer_answer_does_not_modify_original_facts():
     )
 
     assert "frequency" not in customer_facts
+
+def test_process_customer_answer_returns_none_when_extraction_fails(
+    monkeypatch,
+):
+    customer_facts = {
+        "vehicle": {
+            "make": "Volkswagen",
+            "model": "Golf",
+            "year": 2018,
+        },
+        "complaint": (
+            "The vehicle is difficult to start after driving "
+            "for about 30 minutes."
+        ),
+        "symptoms": [],
+        "warning_lights": [],
+    }
+
+    def fake_extract_answer(
+        customer_answer,
+        information_type,
+    ):
+        return None
+
+    monkeypatch.setattr(
+        "diagnostic_orchestrator.extract_answer",
+        fake_extract_answer,
+    )
+
+    result = process_customer_answer(
+        customer_facts,
+        "unclear answer",
+        "frequency",
+    )
+
+    assert result is None
