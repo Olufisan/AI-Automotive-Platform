@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StrictStr
+from diagnostic_schema import DiagnosticAnswer
 
 from database import check_database_connection, save_evidence
 from diagnostic_orchestrator import process_customer_answer
@@ -84,14 +85,26 @@ class DiagnosticRequest(BaseModel):
     customer_answer: StrictStr = Field(max_length=2000)
     information_type: StrictStr
 
+class DiagnosticResult(BaseModel):
+    answer: DiagnosticAnswer
+    updated_facts: dict
+    next_information: str | None = None
+    next_question: str | None = None
+
 
 class DiagnosticResponse(BaseModel):
     success: bool
-    result: dict | None = None
+    result: DiagnosticResult | None = None
     error_code: str | None = None
     message: str | None = None
     request_id: str
     processing_time_seconds: float | None = None
+
+class DiagnosticResult(BaseModel):
+    answer: dict
+    updated_facts: dict
+    next_information: str | None = None
+    next_question: str | None = None
 
 
 class EvidenceResponse(BaseModel):

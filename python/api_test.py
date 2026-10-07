@@ -273,8 +273,9 @@ def test_extract_evidence_handles_unexpected_ai_exception():
 def test_process_diagnostic_success():
     fake_result = {
         "answer": {
-            "value": "It happens when the engine is cold.",
-        },
+        "information_type": "conditions",
+        "answer": "It happens when the engine is cold.",
+},
         "updated_facts": {
             "vehicle": "2018 Volkswagen Golf",
             "conditions": "cold start",
